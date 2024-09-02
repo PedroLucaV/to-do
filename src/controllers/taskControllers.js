@@ -1,9 +1,25 @@
 import Tasks from '../model/taskModel.js';
+import formatZodError from '../helpers/formatZodError.js'
+import {z} from 'zod';
+
+const createSchema = z.object({
+    nome: z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase()),
+    descricao: z.
+    optional
+    (z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}))
+})
 
 //REF 01
 export const createTask = async (req, res) => {
-    const {nome, descricao} = req.body;
 
+    const bodyValidation = createSchema.safeParse(req.body)
+    console.log(bodyValidation)
+
+    if(!bodyValidation.success){
+        return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(bodyValidation.error)})
+    }
+    
+    const {nome, descricao} = bodyValidation.data;
     try{
         const newTask = await Tasks.create({
             nome,
