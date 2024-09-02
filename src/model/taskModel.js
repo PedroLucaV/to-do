@@ -19,8 +19,8 @@ const Tasks = sequelize.define(
             defaultValue: ''
         },
         status: {
-            type: DataTypes.TEXT,
-            allowNull: false,
+            type: DataTypes.ENUM,
+            values: ["pendente", "concluida"],
             defaultValue: "pendente"
         }
 },
