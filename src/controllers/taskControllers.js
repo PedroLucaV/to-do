@@ -24,9 +24,7 @@ export const getTasksByPage = async (req, res) => {
     const offset = (page - 1) * limit
 
     try {
-        const tarefas = await Tasks.findAndCountAll({
-        limit, offset
-        })
+        const tarefas = await Tasks.findAndCountAll({limit, offset})
         const totalPaginas = Math.ceil(tarefas.count / limit)
         
         res.status(200).json({
@@ -36,7 +34,7 @@ export const getTasksByPage = async (req, res) => {
         itemsPorPagina: limit,
         proximaPagina: totalPaginas === 0 
             ? null 
-            : `${process.env.BASE_URL}/tarefas?page=${page + 1}&limit=${limit}`,
+            : `localhost:8080/tarefas?page=${page + 1}&limit=${limit}`,
         tarefas: tarefas.rows
         })
     } catch (error) {
@@ -85,6 +83,22 @@ export const updateStatus = async (req, res) => {
         
         const updatedTask = await Tasks.findOne({raw: true,where: {task_id: id}});
         res.status(200).json({tarefa: updatedTask});
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Erro ao atualizar tarefa" });
+    }
+}
+
+//REF 06
+export const getTaskBySituation = async (req, res) => {
+    const {situacao} = req.params;
+    if(situacao !== 'pendente' && situacao !== 'concluido'){
+        return res.status(400).json({message: "Situação invalida. Use 'pendente' ou 'concluido'"});
+    }
+
+    try {
+        const tarefas = await Tasks.findAll({where: {status: situacao}, raw: true});
+        res.status(200).json(tarefas);
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: "Erro ao atualizar tarefa" });
