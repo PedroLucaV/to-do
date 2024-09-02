@@ -2,14 +2,20 @@ import Tasks from '../model/taskModel.js';
 import formatZodError from '../helpers/formatZodError.js'
 import {z} from 'zod';
 
+const statusRegex = /^(concluida|pendente)/
+
 const createSchema = z.object({
     nome: z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase()),
-    descricao: z.
-    optional
-    (z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}))
+    descricao: z.optional(z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}))
 })
 
 const getSchema = z.string().uuid();
+
+const updateTarefaSchema = z.object({
+    nome: z.optional(z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase())),
+    descricao: z.optional(z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"})),
+    status: z.optional(z.string().regex(statusRegex))
+})
 
 //REF 01
 export const createTask = async (req, res) => {
@@ -83,8 +89,17 @@ export const getById = async (req, res) => {
 
 //REF 04
 export const updateTask = async (req, res) => {
-    const { id } = req.params
-    const { nome, descricao, status } = req.body
+    const idValidation = getSchema.safeParse(req.params.id)
+    const updateValidation = updateTarefaSchema.safeParse(req.body)
+    if(!idValidation.success){
+        return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(idValidation.error)})
+    }
+
+    if(!updateValidation.success){
+        return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(updateValidation.error)})
+    }
+    const id = idValidation.data
+    const { nome, descricao, status } = updateValidation.data;
     
     const tarefaAtualizada = {
         nome,
@@ -93,11 +108,11 @@ export const updateTask = async (req, res) => {
     }
 
     try {
-        const [linhasAfetadas] = await Tarefa.update(tarefaAtualizada, { where: { tarefa_id: id } })
+        const [linhasAfetadas] = await Tasks.update(tarefaAtualizada, { where: { task_id: id } })
 
         if (linhasAfetadas < 1) {
         return res.status(404).json({
-            message: "Tarefa não encontrada."
+            message: "Tarefa não atualizada."
         })
         }
 
