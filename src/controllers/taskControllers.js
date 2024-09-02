@@ -9,7 +9,7 @@ const createSchema = z.object({
     descricao: z.optional(z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}))
 })
 
-const getSchema = z.string().uuid();
+const getSchema = z.string().uuid({message: "UUID invalido!"});
 
 const updateTarefaSchema = z.object({
     nome: z.optional(z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase())),
