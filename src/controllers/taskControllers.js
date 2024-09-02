@@ -9,6 +9,8 @@ const createSchema = z.object({
     (z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}))
 })
 
+const getSchema = z.string().uuid();
+
 //REF 01
 export const createTask = async (req, res) => {
 
@@ -61,10 +63,11 @@ export const getTasksByPage = async (req, res) => {
 
 //REF 03
 export const getById = async (req, res) => {
-    const {id} = req.params;
-    if(!id){
-        return res.status(401).json({message: "Me informe o ID da tarefa desejada"})
+    const idValidation = getSchema.safeParse(req.params.id)
+    if(!idValidation.success){
+        return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(idValidation.error)})
     }
+    const id = idValidation.data
     try{
         const taskById = await Tasks.findByPk(id)
         if(!taskById){
