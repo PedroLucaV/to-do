@@ -12,16 +12,17 @@ const createSchema = z.object({
 const getSchema = z.string().uuid({message: "UUID invalido!"});
 
 const updateTarefaSchema = z.object({
-    nome: z.optional(z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase())),
-    descricao: z.optional(z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"})),
-    status: z.optional(z.string().regex(statusRegex))
+    nome: z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase()),
+    descricao: z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}),
+    status: z.string().regex(statusRegex)
 })
+
+const getBySituationSchema = z.enum(["pendente", "concluida"])
 
 //REF 01
 export const createTask = async (req, res) => {
 
     const bodyValidation = createSchema.safeParse(req.body)
-    console.log(bodyValidation)
 
     if(!bodyValidation.success){
         return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(bodyValidation.error)})
@@ -152,10 +153,12 @@ export const updateStatus = async (req, res) => {
 
 //REF 06
 export const getTaskBySituation = async (req, res) => {
-    const {situacao} = req.params;
-    if(situacao !== 'pendente' && situacao !== 'concluido'){
-        return res.status(400).json({message: "Situação invalida. Use 'pendente' ou 'concluido'"});
+    const sitValidation = getBySituationSchema.safeParse(req.params.situacao)
+    if(!sitValidation.success){
+        return res.status(400).json({message: "Os dados recebidos no corpo da aplicação são invalidos", detalhes: formatZodError(idValidation.error)})
     }
+
+    const situacao = sitValidation.data;
 
     try {
         const tarefas = await Tasks.findAll({where: {status: situacao}, raw: true});
