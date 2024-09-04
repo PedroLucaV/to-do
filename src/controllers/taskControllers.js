@@ -12,9 +12,9 @@ const createSchema = z.object({
 const getSchema = z.string().uuid({message: "UUID invalido!"});
 
 const updateTarefaSchema = z.object({
-    nome: z.optional(z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase())),
-    descricao: z.optional(z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"})),
-    status: z.optional(z.string().regex(statusRegex))
+    nome: z.string().min(3, {message: "A tarefa deve conter pelo menos 3 caracteres"}).transform((txt) => txt.toLowerCase()),
+    descricao: z.string().min(5, {message: "A descricao deve conter pelo menos 5 caracteres"}),
+    status: z.string().regex(statusRegex)
 })
 
 const getBySituationSchema = z.enum(["pendente", "concluida"])
