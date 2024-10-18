@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import router from './routes/taskRoutes.js';
 import sequelize from './config/dbconfig.js'
 import Task from './model/taskModel.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ const app = Express();
 
 app.use(json())
 app.use(urlencoded({extended: true}))
+app.use(cors())
 
 app.use('/', router);
 
